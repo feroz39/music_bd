@@ -55,31 +55,34 @@ export default {
             localStorage.setItem('currentTrack', this.$store.state.currentTrack);
         },
 		scrollTo: function(){
-			var e = this.currentTrackItemId;
-			if(document.querySelector('#'+e)){
-				document.querySelector('.queue-item-area').scrollBy({
-					top: document.querySelector('#'+e).offsetTop - document.querySelector('.queue-item-area').scrollTop,
-					behavior: 'smooth'
-				})
-			}
+            var e = this.currentTrackItemId;
+            setTimeout(() => {
+                if(document.querySelector('#'+e)){
+                    document.querySelector('.queue-item-area').scrollBy({
+                        top: document.querySelector('#'+e).offsetTop - document.querySelector('.queue-item-area').scrollTop,
+                        behavior: 'smooth'
+                    })
+                }              
+            }, 300);
+			
 		}
     },
     computed:{
         currentTrackFile(){
             return [
                 this.$store.state.fileLocation + 
-                this.$store.state.trackSources[(this.$store.state.currentTrack)].file + ".mp3"
+                this.$store.getters.currentTrack.file + ".mp3"
             ];
         },
         autoPlayStatus(){
             return this.$store.state.autoPlayStatus;
         },
         currentTrackItemId() {
-			return this.$store.state.trackSources[(this.$store.state.currentTrack)].id
+			return this.$store.getters.currentTrack.id
 		},
     },
     created: function (){
-        if (isNaN(this.$store.state.currentTrack)) {
+        if (this.$store.getters.currentTrack == undefined) {
             location.reload();
         }
         window.addEventListener('beforeunload', this.beforeRefresh);
@@ -92,14 +95,14 @@ export default {
         for (const obj of this.$store.state.trackQueue) {
             this.$store.state.trackSources.push(obj);
         }
-		if (localStorage.getItem("currentTrack") === null) {
-			localStorage.setItem('currentTrack', 0);
+		if (localStorage.getItem("currentTrackId") === null) {
+			localStorage.setItem('currentTrackId', 'blank');
 		}
 		if (localStorage.getItem("autoPlayStatus") === null) {
 			localStorage.setItem('autoPlayStatus', true);
 		}
 		if (localStorage.getItem("trackQueue") === null) {
-            var trackQueue = [{file: "blank"}]
+            var trackQueue = [{file: "blank", id: "blank"}]
 			localStorage.setItem('trackQueue', JSON.stringify(trackQueue));
         }
     }

@@ -60,7 +60,7 @@ export default {
 	},
 	computed: {
 		currentTrackId: function(){
-			return this.$store.state.trackSources[(this.$store.state.currentTrack)].id
+			return this.$store.state.currentTrackId
 		}
 	},
 	methods: {

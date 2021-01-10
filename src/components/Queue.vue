@@ -33,7 +33,7 @@
 							aria-expanded="false"
 						></span>
 						<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-						<div class="dropdown-item" @click="removeTrack(index)">
+						<div class="dropdown-item" @click="removeTrack(item)">
 							<span class="iconify" data-icon="simple-line-icons:close"></span> Remove from queue
 						</div>
 						<a class="dropdown-item" href="#"><span class="iconify" data-icon="simple-line-icons:heart"></span> Add to favourite </a>
@@ -66,7 +66,6 @@ export default {
 		removeTrack: function(e){
 			this.$store.dispatch('removeTrack', e)
 		},
-
 		clearQueue: function(){
 			this.$store.dispatch('clearQueue');
 		},
@@ -76,14 +75,9 @@ export default {
 			return this.$store.state.trackQueue;
 		},
 		currentTrackItemId() {
-			return this.$store.state.trackSources[(this.$store.state.currentTrack)].id
+			return this.$store.state.currentTrackId
 		},
 	},
-	watch: {
-		currentTrackItemId: function(){
-
-		}
-	}
 }
 </script>
 

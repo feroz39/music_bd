@@ -127,7 +127,7 @@ export default {
 			return this.$store.state.stop;
 		},
 		currentTrackItem(){
-            return this.$store.state.trackQueue[(this.$store.state.currentTemp)];
+            return this.$store.getters.currentTrack;
 		},
 		trackLimit: function(){
 			return this.$store.state.trackSources.length
@@ -163,10 +163,6 @@ export default {
 		}, 
 		progress: function(value) {  
 			if(value >= .999){
-				this.$store.state.trackSources.length = 0;
-				for (const obj of this.$store.state.trackQueue) {
-					this.$store.state.trackSources.push(obj);
-				}
 				this.nextTrack();
 			}else if(value>= 0 && this.currentTrackItem.file == 'blank'){
 				this.stop();

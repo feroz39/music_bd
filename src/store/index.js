@@ -7,46 +7,56 @@ export default new Vuex.Store({
 	state: {
 		trackQueue: JSON.parse(localStorage.getItem("trackQueue") || "[]"),
 		trackSources: [],
-		stop: false,
-		currentTrack: parseInt(localStorage.getItem('currentTrack')),
-		currentTemp: parseInt(localStorage.getItem('currentTrack')),
+		currentTrackId: localStorage.getItem('currentTrackId'),
 		fileLocation: 'http://127.0.0.1:5501/src/assets/audio/',
 		autoPlayStatus: Boolean(localStorage.getItem('autoPlayStatus')),
+		stop: false,
 	},
 	getters: {
+		currentTrack: state => {
+			for (let i = 0; i < state.trackSources.length; i++) {
+				var e = state.trackSources[i];
+				if(e.id == state.currentTrackId){
+					return e;
+				}
+			}
+			return e;
+		}
 	},
 	mutations: {
 
-		nextTrack: (state) => {
+		nextTrack: (state, payload) => {
 			if(state.trackSources.length > 1){
 				state.trackSources.length = 0;
 				state.trackQueue.forEach(el => {
 					state.trackSources.push(el);
 				});
-				if(state.trackSources.length == (state.currentTrack + 1)){
-					localStorage.setItem('currentTrack', 0);
-					state.currentTrack = state.currentTemp = 0;
+				let nextTrack = state.trackSources.indexOf(payload.currentTrack) + 1;
+				let firstTrack = state.trackSources[0];
+
+				if(state.trackSources.length == nextTrack){
+					localStorage.setItem('currentTrackId', firstTrack.id);
+					state.currentTrackId = firstTrack.id;
 				}else{
-					localStorage.setItem('currentTrack', (parseInt(localStorage.getItem('currentTrack')) + 1));
-					state.currentTrack++;
-					state.currentTemp = state.currentTrack;
+					localStorage.setItem('currentTrackId', state.trackSources[nextTrack].id);
+					state.currentTrackId = state.trackSources[nextTrack].id;
 				}
 			}
 		},
-		prevTrack: (state) => {
+		prevTrack: (state, payload) => {
 			if(state.trackSources.length > 1){
 				state.trackSources.length = 0;
 				state.trackQueue.forEach(el => {
 					state.trackSources.push(el);
 				});
-				if(state.currentTrack == 0){
-					localStorage.setItem('currentTrack', state.trackSources.length - 1);
-					state.currentTrack = state.trackSources.length - 1;
-					state.currentTemp = state.currentTrack;
+				let prevTrack = state.trackSources.indexOf(payload.currentTrack) - 1;
+				let lastTrack = state.trackSources[state.trackSources.length - 1];
+				if(prevTrack == -1){
+					localStorage.setItem('currentTrackId', lastTrack.id);
+					state.currentTrackId = lastTrack.id;
 				}else{
-					localStorage.setItem('currentTrack', (localStorage.getItem('currentTrack') - 1));
-					state.currentTrack--;
-					state.currentTemp = state.currentTrack;
+					localStorage.setItem('currentTrackId', state.trackSources[prevTrack].id);
+					state.currentTrackId = state.trackSources[prevTrack].id;
 				}
 
 			}
@@ -57,43 +67,53 @@ export default new Vuex.Store({
 				const el = state.trackQueue[i];
 				state.trackSources.push(el);
 				if(el.id == e){
-					localStorage.setItem('currentTrack', i);
-					state.currentTrack = state.currentTemp = i;
+					localStorage.setItem('currentTrackId', el.id);
+					state.currentTrackId = el.id
 				}
 			}
 		},
-		removeTrack: (state, e) => {
-			state.trackQueue.splice(e, 1);
+		removeTrack: (state, payload) => {
+			let targetTrack = state.trackSources.indexOf(payload.e);
+			let currentTrack = payload.currentTrack;
+			let firstTrack = state.trackQueue[0];
+			let nextTrack = state.trackSources.indexOf(payload.currentTrack);
+
+			state.trackQueue.splice(targetTrack, 1);
 			localStorage.setItem("trackQueue", JSON.stringify(state.trackQueue));
 
 			// Start next or go top if current track removed.
-			if(state.currentTemp == e){
+			console.log(nextTrack)
+			
+			if(currentTrack.id == payload.e.id){
 				state.trackSources.length = 0;
 				state.trackQueue.forEach(el => {
 					state.trackSources.push(el);
 				});
 
-				if(e == state.trackQueue.length){
-					state.currentTrack = state.currentTemp = 0;
+
+				if(targetTrack == state.trackQueue.length){
+					localStorage.setItem('currentTrackId', firstTrack.id);
+					state.currentTrackId = firstTrack.id;
 				}else{
-					state.currentTrack = state.currentTemp;
+					localStorage.setItem('currentTrackId', state.trackSources[nextTrack].id);
+					state.currentTrackId = state.trackSources[nextTrack].id;
 				}
 
 				if(state.trackQueue.length == 0){
 					state.stop = true;
-					var trackQueueBlank = [{file: "blank"}]
+					var trackQueueBlank = [{file: "blank", id: "blank"}]
 					localStorage.setItem("trackQueue", JSON.stringify(trackQueueBlank));
 					state.trackQueue = JSON.parse(localStorage.getItem("trackQueue"));
 					state.trackSources = trackQueueBlank;
-					localStorage.setItem('currentTrack', 0);
-					state.currentTrack = state.currentTemp = 0;
+					localStorage.setItem('currentTrackId', 'blank');
+					state.currentTrackId = "blank";
 				}
 			}
 
 			// Clear upper track and get up other track.
-			else if(state.currentTemp > e){
+			/* else if(state.currentTemp > e){
 				state.currentTemp--;
-			}
+			} */
 		},
 		addQueue: (state, e) => {
 			var checkStatus = false;
@@ -113,26 +133,26 @@ export default new Vuex.Store({
 		},
 		clearQueue: state => {
 			state.stop = true;
-			var trackQueueBlank = [{file: "blank"}]
+			var trackQueueBlank = [{file: "blank", id: "blank"}]
 			localStorage.setItem("trackQueue", JSON.stringify(trackQueueBlank));
 			state.trackQueue = JSON.parse(localStorage.getItem("trackQueue"));
 			state.trackSources = trackQueueBlank;
-			localStorage.setItem('currentTrack', 0);
-			state.currentTrack = state.currentTemp = 0;
+			localStorage.setItem('currentTrackId', 'blank');
+			state.currentTrackId = 'blank'
 		}
 	},
 	actions: {
 		nextTrack: (context) => {
-			context.commit('nextTrack')
+			context.commit('nextTrack', {currentTrack: context.getters.currentTrack})
 		},
 		prevTrack: (context) => {
-			context.commit('prevTrack')
+			context.commit('prevTrack', {currentTrack: context.getters.currentTrack})
 		},
 		selectTrack: (context, e) => {
 			context.commit('selectTrack', e)
 		},
 		removeTrack: (context, e) => {
-			context.commit('removeTrack', e)
+			context.commit('removeTrack',  {e:e, currentTrack: context.getters.currentTrack})
 		},
 		addQueue: (context, e) => {
 			context.commit('addQueue', e)
